@@ -5,11 +5,5 @@
  * @returns {string[]}
  */
 export function sortStrings(arr, param = 'asc') {
-  let sortMas = Array.from(arr);
-  sortMas = sortMas.sort(((a, b) => a.localeCompare(b,'ru',  {sensitivity: 'case', caseFirst: 'upper'})));
-  if (param === 'desc') {
-    sortMas.reverse();
-  }
-  return sortMasgit
-}
 
+}
