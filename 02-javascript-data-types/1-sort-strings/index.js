@@ -12,7 +12,6 @@ export function sortStrings(arr, param = 'asc') {
   if (param !== 'asc' && param !== 'desc'){
     return error;
   }
-
   if (param === 'desc') {
     sortMas.sort(function(b, a) {
       return collator.compare(a, b);
