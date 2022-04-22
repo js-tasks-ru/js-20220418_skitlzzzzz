@@ -5,5 +5,18 @@
  * @returns {string[]}
  */
 export function sortStrings(arr, param = 'asc') {
+  let sortMas = Array.from(arr);
+  let collator = new Intl.Collator('ru-en', {sensitivity: 'case', caseFirst: 'upper'});
 
+  if (param === 'desc') {
+    sortMas.sort(function(b, a) {
+      return collator.compare(a, b);
+    });
+  } else {
+    sortMas.sort(function(a, b) {
+      return collator.compare(a, b);
+    });
+  }
+
+  return sortMas;
 }
