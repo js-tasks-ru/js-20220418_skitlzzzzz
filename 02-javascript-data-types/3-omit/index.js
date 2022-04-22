@@ -5,5 +5,14 @@
  * @returns {object} - returns the new object
  */
 export const omit = (obj, ...fields) => {
+  let mas = {};
 
+  if (fields === []) {
+    return mas;
+  }
+
+  let exclude = fields;
+  mas = Object.fromEntries(Object.entries(obj).filter(e => !exclude.includes(e[0])));
+
+  return mas;
 };
