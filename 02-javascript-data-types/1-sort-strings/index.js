@@ -7,7 +7,11 @@
 export function sortStrings(arr, param = 'asc') {
   let sortMas = Array.from(arr);
   let collator = new Intl.Collator('ru-en', {sensitivity: 'case', caseFirst: 'upper'});
+  const error = 'Parameter should be desc or asc';
 
+  if (param !== 'asc' && param !== 'desc'){
+    return error;
+  }
   if (param === 'desc') {
     sortMas.sort(function(b, a) {
       return collator.compare(a, b);
