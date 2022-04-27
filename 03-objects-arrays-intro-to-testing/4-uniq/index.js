@@ -8,6 +8,5 @@ export function uniq(arr) {
     return [];
   }
 
-  let arrData = [...arr];
-  return [...new Set(arrData)];
+  return [...new Set(arr)];
 }

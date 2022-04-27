@@ -8,12 +8,8 @@ export function invertObj(obj) {
     return obj;
   }
 
-  let obj1 = {...obj};
-  obj1 = Object.entries(obj1);
+  let entries = Object.entries(obj);
+  const inverted = entries.map(([key, value]) => [value, key]);
 
-  obj1.forEach(function (item, index, object) {
-    [object[index][0], object[index][1]] = [object[index][1], object[index][0]];
-  });
-
-  return Object.fromEntries(obj1);
+  return Object.fromEntries(inverted);
 }

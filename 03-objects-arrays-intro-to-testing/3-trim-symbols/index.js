@@ -17,17 +17,25 @@ export function trimSymbols(string, size) {
   let repeatString = [];
   let stringNew = '';
 
+  if (size === 0) {
+    return stringNew;
+  }
+
   masString.forEach(function (item, index, object) {
-    repeatString[item] = (repeatString[item] || 0) + 1;
-    if (repeatString[item] <= size) {
-      stringNew += item;
-    } else if (size === 0) {
-      return stringNew;
-    } else if (repeatString[item] > size
-      && object[index] !== object[index + 1]
-      && object[index + 1] !== undefined)
-    {
-      repeatString[item] = undefined;
+    if(object[index] === object[index + 1]  || object[index + 1] === undefined) {
+      repeatString[item] = (repeatString[item] || 0) + 1;
+      if (repeatString[item] <= size) {
+        stringNew += item;
+      } else if(object[index] !== object[index - 1] && repeatString[item]>size){
+        repeatString[item] = 1;
+        stringNew += item;
+      }
+
+    } else {
+      if(object[index] !== object[index - 1] || (object[index] === object[index - 1] && repeatString[item] < size)){
+        repeatString[item] = 1;
+        stringNew += item;
+      }
     }
   }, masString);
 
