@@ -1,14 +1,14 @@
 export default class ColumnChart {
   element;
   chartHeight = 50;
-  fractionElement = {};
+  fractions = {};
 
   constructor({
                 data = [],
                 label = '',
                 value = 0,
                 link = '',
-                formatHeading,
+                formatHeading = value=>value,
               } = {}) {
     this.data = data;
     this.htmlTitle = label;
@@ -16,11 +16,6 @@ export default class ColumnChart {
     this.link = link;
 
     this.formatHeading = function (value) {
-      if (formatHeading === undefined) {
-        return value;
-      }
-      // let dataFormat = (value / 1000).toFixed(3);
-      // return formatHeading(dataFormat).replace('.', ',');
       return formatHeading(value);
     };
 
@@ -75,13 +70,13 @@ export default class ColumnChart {
     }
 
     this.element = (div);
-    this.fractionElement = this.getSubElements(this.element);
+    this.fractions = this._getFractions(this.element);
   }
 
-  getSubElements(element) {
+  _getFractions(element) {
     const elements = element.querySelectorAll('[data-element]');
     let elementsArray = [...elements];
-    let fractionDiv = [];
+    let fractionDiv = {};
     for (let i = 0; i < elementsArray.length; i++) {
       fractionDiv[elementsArray[i].dataset.element] = elementsArray[i];
     }
@@ -89,12 +84,12 @@ export default class ColumnChart {
   }
 
   update(newArray) {
-    this.fractionElement.body.innerHTML = this._getColumnChart(newArray);
+    this.fractions.body.innerHTML = this._getColumnChart(newArray);
   }
 
   destroy() {
     this.remove();
-    this.fractionElement = {};
+    this.fractions = {};
   }
 
   remove() {
