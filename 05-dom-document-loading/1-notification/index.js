@@ -41,27 +41,25 @@ export default class NotificationMessage {
     return this.element;
   }
 
-  show(targetElem = this.element) {
+  show(targetElem = document.body) {
     NotificationMessage.checkDiv();
 
-    let message = this._render(targetElem);
+    let message = this._render();
 
     if (NotificationMessage.activeNotification) {
       NotificationMessage.activeNotification.remove();
     }
 
     NotificationMessage.activeNotification = this;
-    document.body.append(message);
+    targetElem.append(message);
 
     this.timer = setTimeout(() => {
       this.remove();
-      clearTimeout(this.timer);
     }, this.duration);
 
   }
 
-  _render(targetElem) {
-    this.element = targetElem;
+  _render() {
     this.element = this._getParentBlock();
     this.element.innerHTML = this._getTemplate();
     return this.element;
@@ -69,6 +67,7 @@ export default class NotificationMessage {
 
   remove() {
     this.element.remove();
+    clearTimeout(this.timer);
   }
 
   destroy() {
