@@ -1,13 +1,7 @@
 export default class NotificationMessage {
   element = document.createElement('div');
-  static notificationDiv = document.getElementsByClassName('notification');
-  static canShow = true;
-
-  static checkDiv() {
-    return this.notificationDiv.length === 0 ?
-      this.canShow = true :
-      this.canShow = false;
-  }
+  static activeNotification;
+  timer;
 
   constructor(text,
               {
@@ -35,31 +29,35 @@ export default class NotificationMessage {
   }
 
   _getParentBlock() {
-    this.element.classList.add('notification', this.type);
-    this.element.style.setProperty(`--value`, `${this.duration / 1000}s`);
-    return this.element;
+    let wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+      <div class="notification ${this.type}" style="--value:${this.duration / 1000}s">
+        </div>
+    `;
+    return wrapper;
   }
 
   show(targetElem = this.element) {
-    NotificationMessage.checkDiv();
 
     let message = this._render(targetElem);
 
-    if (NotificationMessage.canShow) {
-      document.body.append(message);
-    } else {
-      NotificationMessage.notificationDiv[0].remove();
-      document.body.append(message);
+    if (NotificationMessage.activeNotification) {
+      NotificationMessage.activeNotification.remove();
     }
 
-    setTimeout(() => {
+    NotificationMessage.activeNotification = this;
+    document.body.append(message);
+
+    this.timer = setTimeout(() => {
       this.remove();
+      clearTimeout(this.timer);
     }, this.duration);
+
   }
 
   _render(targetElem) {
     this.element = targetElem;
-    this.element = this._getParentBlock();
+    this.element = this._getParentBlock().firstElementChild;
     this.element.innerHTML = this._getTemplate();
     return this.element;
   }
@@ -69,6 +67,6 @@ export default class NotificationMessage {
   }
 
   destroy() {
-    this.element = null;
+    this.remove();
   }
 }
