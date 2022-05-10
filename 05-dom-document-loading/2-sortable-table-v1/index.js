@@ -9,7 +9,7 @@ export default class SortableTable {
   divHeader = document.createElement('div');
   divRow = document.createElement('div');
   link;
-  //imgSrc;
+  sortedData;
   error = 'No required param';
   errorSort = 'This type of data cant be sorted';
 
@@ -100,7 +100,6 @@ export default class SortableTable {
 
         divRowData = divRowData.firstElementChild;
         divRowLinkData.appendChild(divRowData);
-        console.log(divRowData);
       });
       this.divRow.appendChild(divRowLinkData);
     });
@@ -121,14 +120,6 @@ export default class SortableTable {
     this.link = category + subcategory + product;
 
     return this.link;
-  }
-
-  //Вариант работы с картинками, если не template
-  _getImgSrc(item) {
-    let itemSrc = item.images[0].url ?
-      item.images[this._randomIntFromInterval(0, item.images.length - 1)].url
-      : '#';
-    return itemSrc;
   }
 
   _randomIntFromInterval(min, max) {
@@ -165,39 +156,50 @@ export default class SortableTable {
     return data;
   }
 
+  _getSortedData(fieldValue, orderValue) {
+    //Хотя это тоже дает сортировку по умолчанию по title
+    if (typeof this.data[0][fieldValue] === 'string') {
+      this.sortedData = this._getStringDataSorted(this.data, fieldValue, orderValue);
+    } else if (typeof this.data[0][fieldValue] === 'number') {
+      this.sortedData = this._getNumberDataSorted(this.data, fieldValue, orderValue);
+    } else {
+      throw new Error(this.errorSort);
+    }
+  }
+
   sort(fieldValue, orderValue) {
     if (orderValue !== 'asc' && orderValue !== 'desc') {
-      return this.error;
+      throw new Error(this.error);
     }
 
     if (fieldValue === '') {
-      return this.error;
+      throw new Error(this.error);
     }
-
-    this.render(fieldValue, orderValue);
+    this._getSortedData(fieldValue, orderValue);
+    this.subElements.header = this._getHeaderDataTemplate(this.headerConfig, orderValue);
+    this.subElements.body = this._getTemplateRow(this.sortedData, this.headerConfig);
   }
 
-  render(fieldValue, orderValue) {
-    let sortedData;
 
-    //Хотя это тоже дает сортировку по умолчанию по title
-    if (typeof this.data[0][fieldValue] === 'string') {
-      sortedData = this._getStringDataSorted(this.data, fieldValue, orderValue);
-    } else if (typeof this.data[0][fieldValue] === 'number') {
-      sortedData = this._getNumberDataSorted(this.data, fieldValue, orderValue);
-    } else {
-      return this.errorSort;
-    }
+
+  render(fieldValue, orderValue) {
+
+    this._getSortedData(fieldValue, orderValue);
+
 
     this.element = this._getTableWrapTemplate();
     this.subelement = this._getChildTableWrapTemplate();
     this.element.appendChild(this.subelement);
-    this.subelement.appendChild(this._getHeaderDataTemplate(this.headerConfig, orderValue));
-    this.subelement.appendChild(this._getTemplateRow(sortedData, this.headerConfig));
+    // this.subelement.appendChild(this._getHeaderDataTemplate(this.headerConfig, orderValue));
+    // this.subelement.appendChild(this._getTemplateRow(this.sortedData, this.headerConfig));
 
     //В данном случае это сделано для теста, но понимаю, что это можно как то использовать
     //Но как?
-    this.subElements = {'body': this._getTemplateRow(sortedData, this.headerConfig)}
+    this.subElements = {'header': this._getHeaderDataTemplate(this.headerConfig, orderValue),
+      'body': this._getTemplateRow(this.sortedData, this.headerConfig)};
+    this.subelement.appendChild(this.subElements.header);
+    this.subelement.appendChild(this.subElements.body);
+
   }
 
   destroy() {

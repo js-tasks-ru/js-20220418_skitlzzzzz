@@ -1,7 +1,14 @@
 export default class NotificationMessage {
   element = document.createElement('div');
-  static activeNotification;
   timer;
+  static notificationDiv = document.getElementsByClassName('notification');
+  static canShow = true;
+
+  static checkDiv() {
+    return this.notificationDiv.length === 0 ?
+      this.canShow = true :
+      this.canShow = false;
+  }
 
   constructor(text,
               {
@@ -29,15 +36,13 @@ export default class NotificationMessage {
   }
 
   _getParentBlock() {
-    let wrapper = document.createElement('div');
-    wrapper.innerHTML = `
-      <div class="notification ${this.type}" style="--value:${this.duration / 1000}s">
-        </div>
-    `;
-    return wrapper;
+    this.element.classList.add('notification', this.type);
+    this.element.style.setProperty(`--value`, `${this.duration / 1000}s`);
+    return this.element;
   }
 
   show(targetElem = this.element) {
+    NotificationMessage.checkDiv();
 
     let message = this._render(targetElem);
 
@@ -57,7 +62,7 @@ export default class NotificationMessage {
 
   _render(targetElem) {
     this.element = targetElem;
-    this.element = this._getParentBlock().firstElementChild;
+    this.element = this._getParentBlock();
     this.element.innerHTML = this._getTemplate();
     return this.element;
   }
