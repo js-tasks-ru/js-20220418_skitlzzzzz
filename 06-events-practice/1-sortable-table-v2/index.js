@@ -1,6 +1,7 @@
 export default class SortableTable {
   element;
   subelement;
+  templateImg;
   subElements = {};
   link;
   sortedData = {};
@@ -11,7 +12,7 @@ export default class SortableTable {
   error = 'No required param';
   errorSort = 'This type of data cant be sorted';
 
-  static theadElements = document.getElementsByClassName('sortable-table__cell');
+  static theadElements;// = element.getElementsByClassName('sortable-table__cell');
   static orderColumn = '';
   static previousOrderColumn;
   static fieldColumn = '';
@@ -48,28 +49,32 @@ export default class SortableTable {
 
     this.render();
 
-    this.subElements.header.addEventListener('pointerdown', (event) => {
-      this.sort = this.isSortLocally ? this.sortOnClient(event) : this.sortOnServer();
-    });
+    SortableTable.theadElements = this.element.getElementsByClassName('sortable-table__cell');
+
+    this.subElements.header.addEventListener('pointerdown', this._getTypeSort.bind(this));
   }
 
-  _getTableWrapTemplate() {
-    this.divTable.classList.add('products-list__container');
-    this.divTable.setAttribute('data-element', 'productsContainer');
+  _getTypeSort(event) {
+    this.sort = this.isSortLocally ? this.sortOnClient(event) : this.sortOnServer();
 
+  }
+
+
+  _getTableWrapTemplate() {
+    this.divTable.innerHTML = `<div data-element="productsContainer" class="products-list__container"></div>`;
+    this.divTable = this.divTable.firstChild;
     return this.divTable;
   }
 
   _getChildTableWrapTemplate() {
-    this.divTableChild.classList.add('sortable-table');
-
+    this.divTableChild.innerHTML = `<div class="sortable-table"></div>`;
+    this.divTableChild = this.divTableChild.firstChild;
     return this.divTableChild;
   }
 
   _getHeaderWrapTemplate() {
-    this.divHeader.classList.add('sortable-table__header', 'sortable-table__row');
-    this.divHeader.setAttribute('data-element', 'header');
-
+    this.divHeader.innerHTML = `<div data-element="header" class="sortable-table__header sortable-table__row"></div>`;
+    this.divHeader = this.divHeader.firstChild;
     return this.divHeader;
   }
 
@@ -85,17 +90,13 @@ export default class SortableTable {
 
     data.forEach(item => {
       let divHeaderData = document.createElement('div');
-      //Это рабочее решение которое добавляет стрелку к нужному столбцу
-      //По каким то причинам тест это решение не проходит
-      //В таким виде стрелки добавляются ко всем столбцам
-      //Если это раскомментировать то все будет корректно работать
-      //if (item.id === this.sorted.id) {
+      if (item.id === this.sorted.id) {
         arrowString = `<span data-element="arrow" class ="sortable-table__sort-arrow">
                         <span class ="sort-arrow"></span>
                     </span>`;
-      // } else {
-      //   arrowString = '';
-      // }
+      } else {
+        arrowString = '';
+      }
 
       headerString = `
             <div class="sortable-table__cell"
@@ -280,6 +281,7 @@ export default class SortableTable {
   remove() {
     this.subelement.remove();
     this.element.remove();
+    this.subElements.header.removeEventListener('pointerdown', this._getTypeSort.bind(this));
   }
 }
 
