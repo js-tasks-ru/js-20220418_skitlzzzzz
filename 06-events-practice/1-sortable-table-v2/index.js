@@ -1,34 +1,21 @@
 export default class SortableTable {
   element;
-  subelement;
-  templateImg;
+  templateColumn;
   subElements = {};
   link;
   sortedData = {};
   divTable = document.createElement('div');
   divTableChild = document.createElement('div');
   divHeader = document.createElement('div');
-  divRow = document.createElement('div');
   error = 'No required param';
   errorSort = 'This type of data cant be sorted';
+  previousOrderColumn;
+  previousColumn;
+  theadElements;
+  orderColumn = '';
+  arrow = '';
+  selectedColumn;
 
-  static theadElements;// = element.getElementsByClassName('sortable-table__cell');
-  static orderColumn = '';
-  static previousOrderColumn;
-  static fieldColumn = '';
-  static previousColumn;
-
-  static compareOrder() {
-    if (this.previousOrderColumn === 'asc') {
-      this.orderColumn = 'desc';
-      this.previousOrderColumn = 'desc';
-    } else {
-      this.orderColumn = 'asc';
-      this.previousOrderColumn = 'asc';
-    }
-
-    return this.orderColumn;
-  }
 
   constructor(headerConfig = [], {
     data = [],
@@ -40,25 +27,33 @@ export default class SortableTable {
     this.data = data;
     this.isSortLocally = true;
 
-    this.templateImg = function (value, index) {
+    this.templateColumn = function (value, index, item) {
       if (this.headerConfig[index].template === undefined) {
-        return value;
+        return `<div class="sortable-table__cell"> ${item[value[index].id]} </div>`;
       }
       return this.headerConfig[index].template(value);
     };
 
+    this.compareOrder = () => {
+      if (this.previousOrderColumn === 'asc') {
+        this.orderColumn = 'desc';
+        this.previousOrderColumn = 'desc';
+      } else {
+        this.orderColumn = 'asc';
+        this.previousOrderColumn = 'asc';
+      }
+
+      return this.orderColumn;
+    };
+
     this.render();
-
-    SortableTable.theadElements = this.element.getElementsByClassName('sortable-table__cell');
-
-    this.subElements.header.addEventListener('pointerdown', this._getTypeSort.bind(this));
+    this.subElements.header.addEventListener('pointerdown', this._getTypeSorting.bind(this));
   }
 
-  _getTypeSort(event) {
+  _getTypeSorting(event) {
     this.sort = this.isSortLocally ? this.sortOnClient(event) : this.sortOnServer();
 
   }
-
 
   _getTableWrapTemplate() {
     this.divTable.innerHTML = `<div data-element="productsContainer" class="products-list__container"></div>`;
@@ -66,86 +61,59 @@ export default class SortableTable {
     return this.divTable;
   }
 
-  _getChildTableWrapTemplate() {
-    this.divTableChild.innerHTML = `<div class="sortable-table"></div>`;
-    this.divTableChild = this.divTableChild.firstChild;
+  _getTableHeaderTemplate() {
+    this.divHeader.innerHTML = `<div data-element="header" class="sortable-table__header sortable-table__row">
+      ${this.headerConfig.map(
+      (item) => `
+                    <div class="sortable-table__cell"
+                     data-id=${item.id}
+                     data-sortable=${item.sortable}
+                     data-order=${this.orderColumn}>
+                        <span>${item.title}</span>
+                     </div>`
+    ).join('')}
+      </div>
+      `;
+
+    this.divHeader = this.divHeader.firstElementChild;
+    return this.divHeader;
+  }
+
+  _getTableBodyTemplate() {
+    this.divTableChild.innerHTML = `
+      <div data-element="body" class="sortable-table__body">
+           ${this.data
+      .map(
+        (item) => `
+                  <a href=${this._getLink(item)} class="sortable-table__row">
+                      ${this.headerConfig.map(
+                          ({id, template},
+                           indexHeader,
+                           itemHeader) =>
+
+                        `${this.templateColumn(itemHeader, indexHeader, item)}`
+                        ).join('')}
+                  </a>
+          `
+      )
+      .join('')}
+      </div>
+      `;
+
+    this.divTableChild = this.divTableChild.firstElementChild;
     return this.divTableChild;
   }
 
-  _getHeaderWrapTemplate() {
-    this.divHeader.innerHTML = `<div data-element="header" class="sortable-table__header sortable-table__row"></div>`;
-    this.divHeader = this.divHeader.firstChild;
-    return this.divHeader;
-  }
-
-  _getHeaderDataTemplate(data, sorting) {
-    this._getHeaderWrapTemplate();
-
-    while (this.divHeader.firstChild) {
-      this.divHeader.removeChild(this.divHeader.firstChild);
+  _addArrow(){
+    this.arrow = `<span data-element="arrow" class="sortable-table__sort-arrow">
+                             <span class="sort-arrow"></span>
+                          </span>`;
+    if(this.previousColumn !== undefined){
+      this.subElements.header.querySelector(`span.sortable-table__sort-arrow[data-element = 'arrow']`).remove();
     }
-
-    let arrowString = '';
-    let headerString = '';
-
-    data.forEach(item => {
-      let divHeaderData = document.createElement('div');
-      if (item.id === this.sorted.id) {
-        arrowString = `<span data-element="arrow" class ="sortable-table__sort-arrow">
-                        <span class ="sort-arrow"></span>
-                    </span>`;
-      } else {
-        arrowString = '';
-      }
-
-      headerString = `
-            <div class="sortable-table__cell"
-            data-id=${item.id}
-            data-sortable=${item.sortable}
-            data-order=${sorting}>
-                <span>${item.title}</span>`
-        + arrowString + `</div>`;
-
-      divHeaderData.innerHTML = headerString;
-      divHeaderData = divHeaderData.firstElementChild;
-      this.divHeader.appendChild(divHeaderData);
-    });
-
-    return this.divHeader;
-  }
-
-  _getTableRowWrapTemplate() {
-    this.divRow.classList.add('sortable-table__body');
-    this.divRow.setAttribute('data-element', 'body');
-
-    return this.divRow;
-  }
-
-  _getTemplateRow(data, fieldsTitle) {
-    this._getTableRowWrapTemplate();
-
-    while (this.divRow.firstChild) {
-      this.divRow.removeChild(this.divRow.firstChild);
-    }
-
-    data.forEach((item) => {
-      let divRowLinkData = document.createElement('div');
-      divRowLinkData.innerHTML = `<a href="${this._getLink(item)}" class="sortable-table__row"></a>`;
-      divRowLinkData = divRowLinkData.firstElementChild;
-
-      fieldsTitle.forEach((itemHeader, indexHeader) => {
-        let divRowData = document.createElement('div');
-        itemHeader.template !== undefined ?
-          divRowData.innerHTML = this.templateImg(itemHeader, indexHeader) :
-          divRowData.innerHTML = `<div class="sortable-table__cell">${item[itemHeader.id]}</div>`;
-
-        divRowData = divRowData.firstElementChild;
-        divRowLinkData.appendChild(divRowData);
-      });
-      this.divRow.appendChild(divRowLinkData);
-    });
-
-    return this.divRow;
+    this.selectedColumn = this.subElements.header.querySelector(`div.sortable-table__cell[data-id=${this.sorted.id}]`)
+    this.selectedColumn.dataset.order = this.orderColumn;
+    this.selectedColumn.insertAdjacentHTML('beforeend', this.arrow);
   }
 
   _getLink(item) {
@@ -194,11 +162,7 @@ export default class SortableTable {
   }
 
   _getSortedData(fieldValue, orderValue) {
-    //Это решение позволило пройти тест на desc equal number
-    //Но из за этого сортировка колонки начинается с такого же
-    //направления сортировки как и предыдущая
-    //До этого сортировка начиналась с asc всегда
-    SortableTable.compareOrder();
+    this.compareOrder();
 
     if (typeof this.data[0][fieldValue] === 'number') {
       this.sortedData = this._getNumberDataSorted(this.data, fieldValue, orderValue);
@@ -207,10 +171,10 @@ export default class SortableTable {
     }
   }
 
-  _getSubelements(orderValue) {
+  _getSubelements() {
     this.subElements = {
-      'header': this._getHeaderDataTemplate(this.headerConfig, orderValue),
-      'body': this._getTemplateRow(this.sortedData, this.headerConfig)
+      'header': this._getTableHeaderTemplate(),
+      'body': this._getTableBodyTemplate()
     };
   }
 
@@ -224,20 +188,20 @@ export default class SortableTable {
     }
 
     this._getSortedData(fieldValue, orderValue);
-    this._getSubelements(orderValue, fieldValue);
+    this.subElements.body = this._getTableBodyTemplate();
+    this._addArrow();
   }
 
 
   render() {
     this._getSortedData(this.sorted.id, this.sorted.order);
-    this._getSubelements(this.sorted.order);
-    SortableTable.previousOrderColumn = this.sorted.order;
+    this._getSubelements();
+    this._addArrow();
+    this.previousOrderColumn = this.sorted.order;
 
     this.element = this._getTableWrapTemplate();
-    this.subelement = this._getChildTableWrapTemplate();
-    this.element.appendChild(this.subelement);
-    this.subelement.appendChild(this.subElements.header);
-    this.subelement.appendChild(this.subElements.body);
+    this.element.append(this.subElements.header);
+    this.element.append(this.subElements.body);
   }
 
   sortOnClient(event) {
@@ -247,17 +211,16 @@ export default class SortableTable {
       target = event.target.closest('div');
     }
 
-    if (SortableTable.previousColumn !== target.dataset.id) {
-      SortableTable.compareOrder();
+    if (this.previousColumn !== target.dataset.id) {
+      this.compareOrder();
     }
 
     if (target.dataset.sortable === 'true') {
-      SortableTable.previousColumn = target.dataset.id;
-      SortableTable.fieldColumn = target.dataset.id;
+      this.previousColumn = target.dataset.id;
       this.sorted.id = target.dataset.id;
-      this.sorted.order = SortableTable.orderColumn;
+      this.sorted.order = this.orderColumn;
 
-      this.sortData(SortableTable.fieldColumn, SortableTable.orderColumn);
+      this.sortData(this.sorted.id, this.orderColumn);
 
     } else if (target.dataset.sortable === 'false') {
       throw new Error(this.errorSort);
@@ -271,17 +234,90 @@ export default class SortableTable {
 
   destroy() {
     this.remove();
-    this.divTable = '';
-    this.divTableChild = '';
-    this.divHeader = '';
-    this.divRow = '';
-    this.arrow = '';
   }
 
   remove() {
-    this.subelement.remove();
+    this.subElements.header.removeEventListener('pointerdown', this._getTypeSorting.bind(this));
     this.element.remove();
-    this.subElements.header.removeEventListener('pointerdown', this._getTypeSort.bind(this));
   }
 }
 
+
+// getChildTableWrapTemplate() {
+//   this.divTableChild.innerHTML = `<div class="sortable-table"></div>`;
+//   this.divTableChild = this.divTableChild.firstChild;
+//   return this.divTableChild;
+// }
+//
+// _getHeaderWrapTemplate() {
+//   this.divHeader.innerHTML = `<div data-element="header" class="sortable-table__header sortable-table__row"></div>`;
+//   this.divHeader = this.divHeader.firstChild;
+//   return this.divHeader;
+// }
+//
+// _getHeaderDataTemplate(data, sorting) {
+//   this._getHeaderWrapTemplate();
+//
+//   while (this.divHeader.firstChild) {
+//     this.divHeader.removeChild(this.divHeader.firstChild);
+//   }
+//
+//   let arrowString = '';
+//   let headerString = '';
+//
+//   data.forEach(item => {
+//     let divHeaderData = document.createElement('div');
+//     if (item.id === this.sorted.id) {
+//       arrowString = `<span data-element="arrow" class ="sortable-table__sort-arrow">
+//                         <span class ="sort-arrow"></span>
+//                     </span>`;
+//     } else {
+//       arrowString = '';
+//     }
+//
+//     headerString = `
+//             <div class="sortable-table__cell"
+//             data-id=${item.id}
+//             data-sortable=${item.sortable}
+//             data-order=${sorting}>
+//                 <span>${item.title}</span>`
+//       + arrowString + `</div>`;
+//
+//     divHeaderData.innerHTML = headerString;
+//     divHeaderData = divHeaderData.firstElementChild;
+//     this.divHeader.appendChild(divHeaderData);
+//   });
+//
+//   return this.divHeader;
+// }
+//
+// _getTableWrapTemplate() {
+//   this.divRow.classList.add('sortable-table__body');
+//   this.divRow.setAttribute('data-element', 'body');
+//
+//   return this.divRow;
+// }
+//
+// _getTemplate (data, fieldsTitle) {
+//   this._getTableWrapTemplate();
+//
+//   while (this.divRow.firstChild) {
+//     this.divRow.removeChild(this.divRow.firstChild);
+//   }
+//
+//   data.forEach((item) => {
+//     let divRowLinkData = document.createElement('div');
+//     divRowLinkData.innerHTML = `<a href="${this._getLink(item)}" class="sortable-table__row"></a>`;
+//     divRowLinkData = divRowLinkData.firstElementChild;
+//
+//     fieldsTitle.forEach((itemHeader, indexHeader) => {
+//       let divRowData = document.createElement('div');
+//       divRowData.innerHTML = this.templateColumn(itemHeader, indexHeader);
+//       divRowData = divRowData.firstElementChild;
+//       divRowLinkData.appendChild(divRowData);
+//     });
+//     this.divRow.appendChild(divRowLinkData);
+//   });
+//
+//   return this.divRow;
+//}

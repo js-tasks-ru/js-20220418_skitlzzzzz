@@ -123,22 +123,22 @@ describe('events-practice/sortable-table-v2', () => {
     expect(lastRow).toHaveTextContent('3');
   });
 
-  // it('should move arrow icon to the corresponding column after sorting', () => {
-  //   const { children } = sortableTable.subElements.header;
-  //   const [_, price, sales] = children;
-  //
-  //   const pointerdown = new MouseEvent('pointerdown', {
-  //     bubbles: true
-  //   });
-  //
-  //   price.dispatchEvent(pointerdown);
-  //
-  //   expect(price).toContainHTML(`<span data-element="arrow" class="sortable-table__sort-arrow">`);
-  //
-  //   sales.dispatchEvent(pointerdown);
-  //
-  //   expect(sales).toContainHTML(`<span data-element="arrow" class="sortable-table__sort-arrow">`);
-  // });
+  it('should move arrow icon to the corresponding column after sorting', () => {
+    const { children } = sortableTable.subElements.header;
+    const [_, price, sales] = children;
+
+    const pointerdown = new MouseEvent('pointerdown', {
+      bubbles: true
+    });
+
+    price.dispatchEvent(pointerdown);
+
+    expect(price).toContainHTML(`<span data-element="arrow" class="sortable-table__sort-arrow">`);
+
+    sales.dispatchEvent(pointerdown);
+
+    expect(sales).toContainHTML(`<span data-element="arrow" class="sortable-table__sort-arrow">`);
+  });
 
   it('should have ability to be destroyed', () => {
     sortableTable.destroy();
