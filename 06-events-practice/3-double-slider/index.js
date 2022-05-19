@@ -1,24 +1,20 @@
 export default class DoubleSlider {
   element = document.createElement('div');
-  thumbLeftElem = document.getElementsByClassName('range-slider__thumb-left');
-  thumbRightElem = document.getElementsByClassName('range-slider__thumb-right');
-  thumbWidth = 0;
-  progressElem = document.getElementsByClassName('range-slider__progress');
-  progressDivElem = document.getElementsByClassName('range-slider__inner');
+  thumbLeftElem;
+  thumbRightElem;
+  progressLine;
+  progressDivElem;
+  progressCoords;
   isDown = false;
-  isLeft = false;
-  thumbCoords;
+  isLeft;
   shiftX;
-  shiftY;
   sliderCoords;
   pixelPerValue;
   from;
   to;
-  static newEdgeLeft;
-  static newEdgeRight;
-  static edgeForRight;
-  static edgeForLeft;
-  static edge;
+  newEdgeLeft;
+  newEdgeRight;
+
 
   constructor({
                 min = 0,
@@ -32,11 +28,10 @@ export default class DoubleSlider {
     };
 
     this.render();
-    this.element.ondragstart = function() {
+
+    this.element.ondragstart = function () {
       return false;
     };
-
-    this.element.addEventListener('pointerdown', this.startRange.bind(this));
 
     this.element.addEventListener('range-select', function (event) {
       for (let i = 0; i < event.target.children.length; i++) {
@@ -68,45 +63,92 @@ export default class DoubleSlider {
   render() {
     this.element.innerHTML = this._getTemplate(this.from, this.to);
     this.element = this.element.firstChild;
+
+    this.identifyThumbs(this.element);
+    this.addEventListenersToThumb();
+
     return this.element;
   }
 
-  startRange(event) {
-    this.isDown = true;
-    if (!event.target.closest('.range-slider__inner')) {
-      return;
-    }
-    this.isLeft = event.target === this.thumbLeftElem[0];
-
-    this.isLeft ?
-      this.shiftX = event.clientX - this.thumbLeftElem[0].getBoundingClientRect().left
-      : this.shiftX = event.clientX - this.thumbRightElem[0].getBoundingClientRect().left;
-
-    this.isLeft ?
-      this.thumbLeftElem[0].setPointerCapture(event.pointerId)
-      : this.thumbRightElem[0].setPointerCapture(event.pointerId);
-
-    this.startDrag(event.clientX, event.clientY);
+  identifyThumbs(elem) {
+    this.thumbLeftElem = elem.getElementsByClassName('range-slider__thumb-left')[0];
+    this.thumbRightElem = elem.getElementsByClassName('range-slider__thumb-right')[0];
   }
 
+  addEventListenersToThumb() {
+    this.thumbLeftElem.addEventListener('pointerdown', this.startRange.bind(this));
+    this.thumbRightElem.addEventListener('pointerdown', this.startRange.bind(this));
+  }
 
-  startDrag(startClientX, startClientY) {
+  startRange(event) {
 
-    this.thumbCoords = this.element.getBoundingClientRect();
-    this.shiftX = startClientX - this.thumbCoords.left;
-    this.shiftY = startClientY - this.thumbCoords.top;
+    this.isLeft = event.target === this.thumbLeftElem;
+    this.isDown = true;
+    if (this.isLeft) {
+      this.shiftX = event.clientX - this.thumbLeftElem.getBoundingClientRect().left;
+      this.thumbLeftElem.setPointerCapture(event.pointerId);
+    } else {
+      this.shiftX = event.clientX - this.thumbRightElem.getBoundingClientRect().right;
+      this.thumbRightElem.setPointerCapture(event.pointerId);
+    }
 
-    this.sliderCoords = this.progressDivElem[0].getBoundingClientRect();
+    this.progressDivElem = this.element.getElementsByClassName('range-slider__inner')[0];
+    this.progressLine = this.element.getElementsByClassName('range-slider__progress')[0];
+
+    this.sliderCoords = this.progressDivElem.getBoundingClientRect();
+    this.progressCoords = this.progressLine.getBoundingClientRect();
 
     this.element.addEventListener('pointermove', this.changeRange.bind(this));
     this.element.addEventListener('pointerup', this.endRange.bind(this));
+  }
+
+  changeRange(event) {
+    if (!this.isDown) {
+      return;
+    }
+
+    if (this.isLeft) {
+      this.newEdgeLeft = event.clientX - this.sliderCoords.left - this.shiftX;
+
+      if (this.newEdgeLeft < 0) {
+        this.newEdgeLeft = 0;
+      }
+
+      const right = parseFloat(this.progressCoords.right);
+
+      if (this.newEdgeLeft + this.sliderCoords.left > right) {
+        this.newEdgeLeft = right - this.sliderCoords.left;
+      }
+
+      this.thumbLeftElem.style.left = this.newEdgeLeft + 'px';
+      this.progressLine.style.left = this.newEdgeLeft + 'px';
+
+    } else {
+      this.newEdgeRight = this.sliderCoords.right - event.clientX - this.shiftX;
+
+      console.log(this.newEdgeRight);
+
+      if (this.newEdgeRight < 0) {
+        this.newEdgeRight = 0;
+      }
+
+      const left = parseFloat(this.progressCoords.left);
+
+      if (this.sliderCoords.right - this.newEdgeRight < left) {
+        this.newEdgeRight = left;
+      }
+
+      this.thumbRightElem.style.right = this.newEdgeRight + 'px';
+      this.progressLine.style.right = this.newEdgeRight + 'px';
+
+    }
 
   }
 
   _getPixelPerValue() {
-    this.pixelPerValue = this.max / this.progressDivElem[0].offsetWidth;
-    this.from = Math.round(Number(DoubleSlider.newEdgeLeft) * this.pixelPerValue);
-    this.to = Math.round(this.max - Number(DoubleSlider.newEdgeRight) * this.pixelPerValue);
+    this.pixelPerValue = this.max / this.progressDivElem.offsetWidth;
+    this.from = Math.round(Number(this.newEdgeLeft) * this.pixelPerValue);
+    this.to = Math.round(this.max - Number(this.newEdgeRight) * this.pixelPerValue);
 
     if (isNaN(this.from)) {
       this.from = this.min;
@@ -117,84 +159,18 @@ export default class DoubleSlider {
     }
   }
 
-  _getEdge() {
-    if (DoubleSlider.newEdgeRight === undefined) {
-      DoubleSlider.edgeForLeft = DoubleSlider.edge;
-    } else {
-      DoubleSlider.edgeForLeft = this.thumbRightElem[0].getBoundingClientRect().right - this.thumbWidth;
-    }
-
-    if (DoubleSlider.newEdgeLeft === undefined) {
-      DoubleSlider.edgeForRight = DoubleSlider.edge;
-    } else {
-      DoubleSlider.edgeForRight = DoubleSlider.edge - this.thumbLeftElem[0].getBoundingClientRect().right- this.thumbWidth;
-    }
-    console.log('DoubleSlider.edgeForRight ' + DoubleSlider.edgeForRight)
-    console.log('this.thumbLeftElem[0].getBoundingClientRect().right ' + this.thumbLeftElem[0].getBoundingClientRect().right)
-    console.log('DoubleSlider.edgeForLeft ' + DoubleSlider.edgeForLeft)
-    console.log('this.thumbRightElem[0].getBoundingClientRect().right ' + this.thumbRightElem[0].getBoundingClientRect().right)
-
-  }
-
-  _checkLimits() {
-    if (DoubleSlider.newEdgeRight < 0) {
-      DoubleSlider.newEdgeRight = 0;
-    }
-
-    if (DoubleSlider.newEdgeRight > DoubleSlider.edgeForRight) {
-      DoubleSlider.newEdgeRight = DoubleSlider.edgeForRight;
-    }
-
-    if (DoubleSlider.newEdgeLeft < 0) {
-      DoubleSlider.newEdgeLeft = 0;
-    }
-
-    if (DoubleSlider.newEdgeLeft > DoubleSlider.edgeForLeft) {
-      DoubleSlider.newEdgeLeft = DoubleSlider.edgeForLeft;
-    }
-  }
-
-  _addStyle() {
-    this.thumbLeftElem[0].style.left = DoubleSlider.newEdgeLeft + 'px';
-    this.progressElem[0].style.left = DoubleSlider.newEdgeLeft + 'px';
-    this.thumbRightElem[0].style.right = DoubleSlider.newEdgeRight + 'px';
-    this.progressElem[0].style.right = DoubleSlider.newEdgeRight + 'px';
-  }
-
-  moveRange(clientX) {
-    this.thumbWidth = this.thumbLeftElem[0].offsetWidth;
-    this.isLeft ?
-      DoubleSlider.newEdgeLeft = clientX - this.thumbWidth - this.sliderCoords.left
-      : DoubleSlider.newEdgeRight = this.sliderCoords.right - clientX - this.thumbWidth;
-
-
-    DoubleSlider.edge = this.progressDivElem[0].offsetWidth;
-    this._checkLimits();
-    this._getEdge();
+  endRange(event) {
+    this.isDown = false;
     this._getPixelPerValue();
-    this._addStyle();
 
     this.customEvent = new CustomEvent('range-select', {
       bubbles: true,
       detail: {from: this.from, to: this.to}
     });
     this.element.dispatchEvent(this.customEvent);
-  }
 
-  changeRange(event) {
-    if (!this.isDown) {
-      return;
-    }
-
-    this.element.addEventListener('pointerup', this.endRange.bind(this));
-    this.moveRange(event.clientX);
-  }
-
-  endRange() {
-    this.isDown = false;
-    this.element.removeEventListener('pointermove', this.changeRange.bind(this));
-    this.element.removeEventListener('pointerdown', this.startRange.bind(this));
-    this.element.removeEventListener('pointerup', this.endRange.bind(this));
+    document.removeEventListener('pointermove', this.changeRange.bind(this));
+    document.removeEventListener('pointerup', this.endRange.bind(this));
   }
 
   destroy() {
