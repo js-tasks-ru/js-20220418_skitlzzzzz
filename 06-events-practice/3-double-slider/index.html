@@ -10,8 +10,19 @@
   <script type="module">
     import DoubleSlider from './index.js';
 
-    const slider = new DoubleSlider();
+    //const slider = new DoubleSlider();
+    const doubleSlider = new DoubleSlider({
+      min: 300,
+      max: 800,
+      selected: {
+        from: 400,
+        to: 600
+      },
+      formatValue: value => '$' + value,
+    });
+//     const leftBoundary = doubleSlider.element.querySelector('span[data-element="from"]');
+// console.log(leftBoundary)
 
-    root.append(slider.element);
+    root.append(doubleSlider.element);
   </script>
 </body>
