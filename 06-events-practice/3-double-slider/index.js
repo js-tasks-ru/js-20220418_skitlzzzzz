@@ -19,10 +19,12 @@ export default class DoubleSlider {
   constructor({
                 min = 0,
                 max = 100,
+                selected,
                 formatValue = value => value,
               } = {}) {
     this.min = min;
     this.max = max;
+    this.selected = selected ? selected : {'from': this.min, 'to': this.max};
     this.formatValue = formatValue;
     this.startRangeFunc = this.startRange.bind(this);
     this.changeRangeFunc = this.changeRange.bind(this);
@@ -36,7 +38,7 @@ export default class DoubleSlider {
     this.element.addEventListener('range-select', this._getSliderContext);
   }
 
-  _getSliderContext(event){
+  _getSliderContext(event) {
     for (let i = 0; i < event.target.children.length; i++) {
 
       if (event.target.children[i].dataset.element === 'from') {
@@ -126,8 +128,6 @@ export default class DoubleSlider {
 
     } else {
       this.newEdgeRight = this.sliderCoords.right - event.clientX - this.shiftX;
-
-      console.log(this.newEdgeRight);
 
       if (this.newEdgeRight < 0) {
         this.newEdgeRight = 0;

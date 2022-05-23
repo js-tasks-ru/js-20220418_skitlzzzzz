@@ -197,7 +197,7 @@ describe('events-practice/double-slider', () => {
   //
   //   expect(rangeSelectEvent[0].type).toEqual("range-select");
   // });
-  
+
   // it('should have a new ranges in produced event', () => {
   //   const spyDispatchEvent = jest.spyOn(doubleSlider.element, 'dispatchEvent');
   //   const leftSlider = doubleSlider.element.querySelector('.range-slider__thumb-left');
