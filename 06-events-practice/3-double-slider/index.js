@@ -23,29 +23,30 @@ export default class DoubleSlider {
               } = {}) {
     this.min = min;
     this.max = max;
-    this.formatValue = function (value) {
-      return formatValue(value);
-    };
-
+    this.formatValue = formatValue;
+    this.startRangeFunc = this.startRange.bind(this);
+    this.changeRangeFunc = this.changeRange.bind(this);
+    this.endRangeFunc = this.endRange.bind(this);
     this.render();
 
     this.element.ondragstart = function () {
       return false;
     };
 
-    this.element.addEventListener('range-select', function (event) {
-      for (let i = 0; i < event.target.children.length; i++) {
+    this.element.addEventListener('range-select', this._getSliderContext);
+  }
 
-        if (event.target.children[i].dataset.element === 'from') {
-          event.target.children[i].textContent = event.detail.from;
-        }
+  _getSliderContext(event){
+    for (let i = 0; i < event.target.children.length; i++) {
 
-        if (event.target.children[i].dataset.element === 'to') {
-          event.target.children[i].textContent = event.detail.to;
-        }
+      if (event.target.children[i].dataset.element === 'from') {
+        event.target.children[i].textContent = event.detail.from;
       }
 
-    });
+      if (event.target.children[i].dataset.element === 'to') {
+        event.target.children[i].textContent = event.detail.to;
+      }
+    }
   }
 
   _getTemplate(from = this.min, to = this.max) {
@@ -76,8 +77,8 @@ export default class DoubleSlider {
   }
 
   addEventListenersToThumb() {
-    this.thumbLeftElem.addEventListener('pointerdown', this.startRange.bind(this));
-    this.thumbRightElem.addEventListener('pointerdown', this.startRange.bind(this));
+    this.thumbLeftElem.addEventListener('pointerdown', this.startRangeFunc);
+    this.thumbRightElem.addEventListener('pointerdown', this.startRangeFunc);
   }
 
   startRange(event) {
@@ -98,8 +99,8 @@ export default class DoubleSlider {
     this.sliderCoords = this.progressDivElem.getBoundingClientRect();
     this.progressCoords = this.progressLine.getBoundingClientRect();
 
-    this.element.addEventListener('pointermove', this.changeRange.bind(this));
-    this.element.addEventListener('pointerup', this.endRange.bind(this));
+    this.element.addEventListener('pointermove', this.changeRangeFunc);
+    this.element.addEventListener('pointerup', this.endRangeFunc);
   }
 
   changeRange(event) {
@@ -169,8 +170,8 @@ export default class DoubleSlider {
     });
     this.element.dispatchEvent(this.customEvent);
 
-    document.removeEventListener('pointermove', this.changeRange.bind(this));
-    document.removeEventListener('pointerup', this.endRange.bind(this));
+    document.removeEventListener('pointermove', this.changeRangeFunc);
+    document.removeEventListener('pointerup', this.endRangeFunc);
   }
 
   destroy() {
@@ -179,5 +180,6 @@ export default class DoubleSlider {
 
   remove() {
     this.element.remove();
+    this.element.removeEventListener('range-select', this._getSliderContext);
   }
 }
