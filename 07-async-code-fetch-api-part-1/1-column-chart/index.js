@@ -21,30 +21,25 @@ export default class ColumnChart {
     this.htmlTitle = label;
     this.range = range;
     this.link = link;
-
-    this.formatHeading = function (value) {
-      return formatHeading(value);
-    };
+    this.formatHeading = formatHeading
 
     this.render();
-    this.dataFromServer = this._getDataFromServer().catch('Caught error');
-
   }
 
   _updateBody() {
     let isClassLoading = this.element.classList.contains('column-chart_loading');
 
-    if (this._getData() && isClassLoading) {
+    if (this._isData() && isClassLoading) {
       this.element.classList.remove('column-chart_loading');
-    } else if (!this._getData() && !isClassLoading) {
+    } else if (!this._isData() && !isClassLoading) {
       this.element.classList.add('column-chart_loading');
     }
 
-    this.subElements.header.innerHTML = this._getValue();
+    this.subElements.header.innerHTML = this._getHeader();
     this.subElements.body.innerHTML = this._getColumnChart();
   }
 
-  _getData() {
+  _isData() {
     return this.data.length !== 0;
   }
 
@@ -55,7 +50,7 @@ export default class ColumnChart {
         ${this._getLink()}
       </div>
       <div class="column-chart__container">
-      <div data-element="header" class="column-chart__header">${this._getValue()}</div>
+      <div data-element="header" class="column-chart__header">${this._getHeader()}</div>
         <div data-element="body" class="column-chart__chart">
           ${this._getColumnChart()}
         </div>
@@ -63,7 +58,7 @@ export default class ColumnChart {
     </div>`;
   }
 
-  _getValue() {
+  _getHeader() {
 
     if (this.data.length === 0) {
       return;
@@ -94,8 +89,7 @@ export default class ColumnChart {
     url.search = new URLSearchParams(this.range);
 
     let response = await fetchJson(url);
-     let result = await response;
-
+    let result = response;
 
     this.data = Object.values(result);
     this.value = this.data.reduce((sum, current) => sum + current, 0);
@@ -125,7 +119,7 @@ export default class ColumnChart {
     this.element.innerHTML = this._getTemplate();
     this.element = this.element.firstChild;
 
-    if (this._getData()) {
+    if (this._isData()) {
       this.element.classList.remove('column-chart_loading');
     }
 
