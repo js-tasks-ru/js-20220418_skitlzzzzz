@@ -65,10 +65,7 @@ export default class SortableTable {
   _chooseTypeSorting(event) {
     let target = event.target;
 
-    if (event.target.nodeName === 'SPAN') {
-      target = event.target.closest('div');
-    }
-    ;
+    target = event.target.closest('div');
 
     this.compareOrder();
 
@@ -220,7 +217,7 @@ export default class SortableTable {
     return data;
   }
 
-  _getSortedData(fieldValue, orderValue) {
+  _sortingDataByType(fieldValue, orderValue) {
     this.compareOrder();
 
     if (typeof this.data[0][fieldValue] === 'number') {
@@ -246,7 +243,7 @@ export default class SortableTable {
       throw new Error(this.error);
     }
 
-    this._getSortedData(fieldValue, orderValue);
+    this._sortingDataByType(fieldValue, orderValue);
     this.subElements.body.innerHTML = this._getTableBodyTemplate().innerHTML;
     this._addArrow();
   }
@@ -305,7 +302,6 @@ export default class SortableTable {
     let loadedData = await this.loadData(fieldValue, orderValue, 0);
 
     this.subElements.body.innerHTML = this._getTableBodyTemplate(loadedData).innerHTML;
-
   }
 
   destroy() {
