@@ -276,7 +276,7 @@ export default class ProductForm {
       });
 
       /*
-      TO DO добавить изображение в imageListContainer
+      TODO добавить изображение в imageListContainer
       А то ловится ошибка 429
        */
 
