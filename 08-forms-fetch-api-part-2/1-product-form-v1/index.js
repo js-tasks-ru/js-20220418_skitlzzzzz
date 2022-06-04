@@ -155,7 +155,7 @@ export default class ProductForm {
     keys.forEach(item => {
       let valueForm = productForm.querySelector(`[name="${item}"]`);
       //Что означает запись (`#${item}`) и почему она не работает?
-      //В тесте также изменила
+      //В тесте также изменила на name="${item}"
       //let valueForm = productForm.querySelector(`#${item}`).value;
       if (valueForm) {
         valueForm.value = this.formData[item];
@@ -195,7 +195,7 @@ export default class ProductForm {
     return values;
   }
 
-  async save(event) {
+  async save() {
     let url = new URL(BACKEND_URL + '/api/rest/products');
     let {productForm} = this.subElements;
 
@@ -263,7 +263,6 @@ export default class ProductForm {
       let [file] = fileInput.files;
       fileInput.remove();
 
-
       btnUploadImg.classList.add('is-loading');
       btnUploadImg.disabled = true;
 
@@ -294,15 +293,15 @@ export default class ProductForm {
 
   addListeners() {
     let {productForm} = this.subElements;
-    let btnUploadImg = productForm.querySelector('[name="uploadImage"]')
+    let btnUploadImg = productForm.querySelector('[name="uploadImage"]');
     productForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      this.save(event);
+      this.save();
     });
     btnUploadImg.addEventListener('click', (event) => {
       event.preventDefault();
       this.uploadImage(event, btnUploadImg);
-    })
+    });
   }
 
   remove() {
