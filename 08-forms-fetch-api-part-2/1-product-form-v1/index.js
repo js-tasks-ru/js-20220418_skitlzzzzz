@@ -7,8 +7,6 @@ export default class ProductForm {
   element;
   subElements = {};
   categories;
-  productForm;
-  imageListContainer;
   formData = {
     title: '',
     description: '',
