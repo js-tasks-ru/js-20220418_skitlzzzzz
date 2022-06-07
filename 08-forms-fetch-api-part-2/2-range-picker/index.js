@@ -2,10 +2,11 @@ export default class RangePicker {
   element;
   subElements = {};
   isSelected = false;
-  selectedDate = {from: new Date(), to: new Date()}
+  selectedDate = {from: new Date().toLocaleDateString('ru', { dateStyle: 'short'}),
+    to: new Date().toLocaleDateString('ru', { dateStyle: 'short'})}
 
   static formatDate(date) {
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('ru', { dateStyle: 'short'});
   }
 
   constructor({
