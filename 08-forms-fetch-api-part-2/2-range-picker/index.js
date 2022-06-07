@@ -2,7 +2,7 @@ export default class RangePicker {
   element;
   subElements = {};
   isSelected = false;
-  selectedDate = {from: new Date(), to: new Date()}
+  selectedDate = {from: new Date().toLocaleDateString('ru', { dateStyle: 'short'}), to: new Date().toLocaleDateString('ru', { dateStyle: 'short'})}
 
   static formatDate(date) {
     return date.toLocaleDateString('ru', { dateStyle: 'short'});
@@ -13,7 +13,7 @@ export default class RangePicker {
                 to = new Date().toLocaleDateString('ru', { dateStyle: 'short'})
               }
                 = {}) {
-    this.startFrom = new Date(from);
+    this.startFrom = new Date(from).toLocaleDateString('ru', { dateStyle: 'short'});
     this.selectedDate = {from, to};
 
     this.open = this.openCalendar.bind(this);
