@@ -2,18 +2,18 @@ export default class RangePicker {
   element;
   subElements = {};
   isSelected = false;
-  selectedDate = {from: new Date().toLocaleDateString('ru', { dateStyle: 'short'}), to: new Date().toLocaleDateString('ru', { dateStyle: 'short'})}
+  selectedDate = {from: new Date(), to: new Date()}
 
   static formatDate(date) {
     return date.toLocaleDateString('ru', { dateStyle: 'short'});
   }
 
   constructor({
-                from = new Date().toLocaleDateString('ru', { dateStyle: 'short'}),
-                to = new Date().toLocaleDateString('ru', { dateStyle: 'short'})
+                from = new Date(),
+                to = new Date()
               }
                 = {}) {
-    this.startFrom = new Date(from).toLocaleDateString('ru', { dateStyle: 'short'});
+    this.startFrom = new Date(from);
     this.selectedDate = {from, to};
 
     this.open = this.openCalendar.bind(this);
@@ -56,7 +56,7 @@ export default class RangePicker {
   }
 
   _getCurrentMonth(currentDate = this.startFrom) {
-    return currentDate.toLocaleString('default', {month: 'long'});
+    return currentDate.toLocaleString('ru', {month: 'long'});
   }
 
   _highlightRange() {
