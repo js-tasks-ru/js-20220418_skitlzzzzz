@@ -47,7 +47,6 @@ describe('forms-fetch-api-part-2/product-form-v1', () => {
     }
 
     const categoriesNames = prepareCategoryName();
-
     expect(subcategory.children[0]).toHaveTextContent(categoriesNames[0]);
     expect(subcategory.children[subcategory.children.length - 1])
       .toHaveTextContent(categoriesNames[categoriesNames.length - 1]);
@@ -69,7 +68,7 @@ describe('forms-fetch-api-part-2/product-form-v1', () => {
     const values = {};
 
     for (const field of fields) {
-      values[field] = productForm.querySelector(`#${field}`).value;
+      values[field] = productForm.querySelector(`[name="${field}"]`).value;
     }
 
     const imagesHTMLCollection = imageListContainer.querySelectorAll('.sortable-table__cell-img');
