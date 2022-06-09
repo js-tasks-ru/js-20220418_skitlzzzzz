@@ -306,10 +306,7 @@ export default class ProductForm {
   }
 
   remove() {
-    let {productForm} = this.subElements;
-    let btnUploadImg = productForm.querySelector('[name="uploadImage"]');
     this.element.remove();
-    btnUploadImg.removeEventListener('click', this.uploadingImg);
   }
 
   destroy() {
