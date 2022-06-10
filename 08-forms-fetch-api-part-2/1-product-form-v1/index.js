@@ -19,6 +19,7 @@ export default class ProductForm {
 
   constructor(productId) {
     this.productId = productId;
+    this.uploadingImg = this.uploadingImageCall.bind(this);
   }
 
   dispatchEvents(productId) {
@@ -32,6 +33,12 @@ export default class ProductForm {
       });
 
     this.element.dispatchEvent(event);
+  }
+
+  uploadingImageCall(event) {
+    console.log(event.currentTarget)
+    event.preventDefault();
+    this.uploadImage(event, event.currentTarget);
   }
 
   _getFormTemplate(data) {
@@ -163,34 +170,33 @@ export default class ProductForm {
   }
 
   _getFormValue(values) {
-    let {imageListContainer} = this.subElements;
+    const transformValues = {...values, url: undefined, source: undefined};
+    const {imageListContainer} = this.subElements;
     let numberFormat = ['discount', 'price', 'quantity', 'status'];
 
-    let keys = Object.keys(values).filter(item =>
+    let keys = Object.keys(transformValues).filter(item =>
       numberFormat.includes(item)
     );
 
     keys.forEach(item => {
-      values[item] = Number(values[item]);
+      transformValues[item] = Number(transformValues[item]);
     });
 
-    values.id = this.productId;
-    values.images = [];
-    delete values.url;
-    delete values.source;
+    transformValues.id = this.productId;
+    transformValues.images = [];
 
     let images = imageListContainer.querySelectorAll('.sortable-list__item');
 
     images.forEach(item => {
       let url = item.querySelector("input[name = 'url']");
       let source = item.querySelector("input[name = 'source']");
-      values.images.push({
+      transformValues.images.push({
         url: url.value,
         source: source.value
       });
     });
 
-    return values;
+    return transformValues;
   }
 
   async save() {
@@ -296,10 +302,7 @@ export default class ProductForm {
       event.preventDefault();
       this.save();
     });
-    btnUploadImg.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.uploadImage(event, btnUploadImg);
-    });
+    btnUploadImg.addEventListener('click', this.uploadingImg);
   }
 
   remove() {
