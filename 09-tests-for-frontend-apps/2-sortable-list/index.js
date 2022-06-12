@@ -5,7 +5,7 @@ export default class SortableList {
   x;
   y;
 
-  constructor({items} = {}) {
+  constructor({items = []} = {}) {
     this.items = [...items];
     this.mouseDown = this.dragDrop.bind(this);
     this.mouseMove = this.mouseMoveHandler.bind(this);
@@ -24,7 +24,6 @@ export default class SortableList {
   }
 
   render() {
-    console.log(this.items)
     this.element = document.createElement('div');
     this.element.classList.add('sortable-list');
 
@@ -120,8 +119,8 @@ export default class SortableList {
   }
 
   replacingMove(event) {
-    this.draggingEl.style.top = `${event.clientY - this.y}px`;
-    this.draggingEl.style.left = `${event.clientX - this.x}px`;
+    this.draggingEl.style.top = `${event.pageY - this.y}px`;
+    this.draggingEl.style.left = `${event.pageX - this.x}px`;
   }
 
   mouseUpHandler() {
