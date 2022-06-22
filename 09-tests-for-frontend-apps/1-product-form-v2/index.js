@@ -104,11 +104,14 @@ export default class {
     let wrap = document.createElement('div');
 
     wrap.innerHTML = `<li class="products-edit__imagelist-item sortable-list__item" style="">
-        <input type="hidden" name="url" value="${url}">
-        <input type="hidden" name="source" value="${source}">
+        <input type="hidden" name="url" value="${escapeHtml(url)}">
+        <input type="hidden" name="source" value="${escapeHtml(source)}">
         <span>
            <img src="icon-grab.svg" data-grab-handle="" alt="grab">
-           <img class="sortable-table__cell-img" alt="Image" src="${url}">
+           <img class="sortable-table__cell-img"
+                alt="${escapeHtml(source)}"
+                src="${escapeHtml(url)}"
+                referrerpolicy="no-referrer">
            <span>${source}</span>
         </span>
         <button type="button">
@@ -218,7 +221,7 @@ export default class {
     values = this._getFormValue(values);
 
     try {
-      let response = await fetchJson(url, {
+      await fetchJson(url, {
         method: this.productId ? 'PATCH' : 'PUT',
         headers: {
           'Content-type': 'application/json'
@@ -280,25 +283,27 @@ export default class {
       let [file] = fileInput.files;
       fileInput.remove();
 
-      btnUploadImg.classList.add('is-loading');
-      btnUploadImg.disabled = true;
 
-      let response = await fetchJson(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Client-ID' + IMGUR_CLIENT_ID
-        },
-        body: file
-      });
+      if(file){
+        let formData = new FormData();
+        formData.append('image', file);
 
-      /*
-      TODO добавить изображение в imageListContainer
-      А то ловится ошибка 429
-       */
+        btnUploadImg.classList.add('is-loading');
+        btnUploadImg.disabled = true;
+
+        let response = await fetchJson(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`,
+          },
+          body: formData
+        });
 
 
-      btnUploadImg.classList.remove('is-loading');
-      btnUploadImg.disabled = false;
+        imageListContainer.firstElementChild.append(this._getListImage(response.data.link, file.name))
+        btnUploadImg.classList.remove('is-loading');
+        btnUploadImg.disabled = false;
+      }
     };
 
     fileInput.hidden = true;
