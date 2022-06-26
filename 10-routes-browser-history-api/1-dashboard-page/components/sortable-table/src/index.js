@@ -61,6 +61,10 @@ export default class SortableTable {
 
   constructor(headersConfig = [], {
     url = '',
+    range = {
+      from: new Date(),
+      to: new Date(),
+    },
     sorted = {
       id: headersConfig.find(item => item.sortable).id,
       order: 'asc'
@@ -76,6 +80,7 @@ export default class SortableTable {
     this.sorted = sorted;
     this.isSortLocally = isSortLocally;
     this.step = step;
+    this.range = range;
     this.start = start;
     this.end = end;
 
@@ -84,6 +89,8 @@ export default class SortableTable {
 
   async render() {
     const {id, order} = this.sorted;
+    const { from, to } = this.range;
+
     const wrapper = document.createElement('div');
 
     wrapper.innerHTML = this.getTable();
@@ -93,13 +100,15 @@ export default class SortableTable {
     this.element = element;
     this.subElements = this.getSubElements(element);
 
-    const data = await this.loadData(id, order, this.start, this.end);
+    const data = await this.loadData(from, to, id, order, this.start, this.end);
 
     this.renderRows(data);
     this.initEventListeners();
   }
 
-  async loadData(id, order, start = this.start, end = this.end) {
+  async loadData(from, to, id, order, start = this.start, end = this.end) {
+    this.url.searchParams.set('from', from.toISOString());
+    this.url.searchParams.set('to', to.toISOString());
     this.url.searchParams.set('_sort', id);
     this.url.searchParams.set('_order', order);
     this.url.searchParams.set('_start', start);
@@ -212,7 +221,9 @@ export default class SortableTable {
   }
 
   async sortOnServer(id, order, start, end) {
-    const data = await this.loadData(id, order, start, end);
+    const { from, to } = this.range;
+
+    const data = await this.loadData(from, to, id, order, start, end);
 
     this.renderRows(data);
   }
