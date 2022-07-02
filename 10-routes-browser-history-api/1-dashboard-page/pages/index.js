@@ -20,7 +20,7 @@ export default class Page {
     this.components.ordersChart.update(from, to);
     this.components.salesChart.update(from, to);
     this.components.customersChart.update(from, to);
-
+    this.components.sortableTable.updateData(from, to);
   }
 
   get template() {
@@ -73,61 +73,6 @@ export default class Page {
       label: 'customers',
       link: '#',
     });
-    const header = [
-      {
-        id: 'images',
-        title: 'Image',
-        sortable: false,
-        template: (data = []) => {
-          return `
-          <div class="sortable-table__cell">
-            <img class="sortable-table-image" alt="Image" src="${data[0]?.url}">
-          </div>
-        `;
-        }
-      },
-      {
-        id: 'title',
-        title: 'Name',
-        sortable: true,
-        sortType: 'string'
-      },
-      {
-        id: 'subcategory',
-        title: 'Category',
-        sortable: false,
-        template: (data = []) => {
-          return `
-          <div class="sortable-table__cell">
-            ${data.title}
-          </div>
-        `;
-        }
-      },
-      {
-        id: 'quantity',
-        title: 'Quantity',
-        sortable: true,
-        sortType: 'number'
-      },
-      {
-        id: 'price',
-        title: 'Price',
-        sortable: true,
-        sortType: 'number'
-      },
-      {
-        id: 'status',
-        title: 'Status',
-        sortable: true,
-        sortType: 'number',
-        template: data => {
-          return `<div class="sortable-table__cell">
-          ${data > 0 ? 'Active' : 'Inactive'}
-        </div>`;
-        }
-      },
-    ];
 
     const sortableTable = new SortableTable(header, {
       url: 'api/dashboard/bestsellers',

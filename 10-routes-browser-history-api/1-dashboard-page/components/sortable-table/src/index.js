@@ -123,6 +123,14 @@ export default class SortableTable {
     return data;
   }
 
+  async updateData(from, to){
+    const {id, order} = this.sorted;
+
+    const data = await this.loadData(from, to, id, order,this.start, this.end);
+
+    this.renderRows(data);
+  }
+
   addRows(data) {
     this.data = data;
 
